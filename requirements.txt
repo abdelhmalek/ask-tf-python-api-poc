@@ -1,0 +1,4 @@
+Flask==2.0.1
+Werkzeug==2.0.1
+json-rpc==1.13.0
+marshmallow==3.14.1
