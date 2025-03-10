@@ -49,7 +49,9 @@ To call the `hello-world` method, send a POST request to the API with the follow
 {
     "jsonrpc": "2.0",
     "method": "hello-world",
-    "params": {},
+    "params": {
+        "message": "Hello my sneaky friend"
+    },
     "id": 1
 }
 ```
@@ -59,7 +61,7 @@ The response will be:
 {
     "jsonrpc": "2.0",
     "result": {
-        "message": "Hello World"
+        "message": "Hello my sneaky friend"
     },
     "id": 1
 }
