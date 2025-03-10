@@ -5,6 +5,10 @@ from marshmallow import ValidationError
 from schemas.message_schema import MessageSchema
 from jsonrpc.exceptions import JSONRPCDispatchException
 from errors.errors import InvalidParamsError
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load environment variables from .env file
 
 app = Flask(__name__)
 app.config.from_object(get_config())
