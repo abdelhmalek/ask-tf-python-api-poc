@@ -24,3 +24,25 @@ run:
 run-dev:
 	@echo "Running the API server in development mode with hot reload..."
 	FLASK_ENV=development $(call venv, python app.py)
+
+.PHONY: test
+test:
+	@echo "Running tests..."
+	$(call venv, python -m unittest discover -s tests)
+
+.PHONY: functional-test
+functional-test:
+	@echo "Running Cucumber tests..."
+	$(call venv, behave)
+
+.PHONY: up
+up:
+	docker-compose up --build --remove-orphans --force-recreate
+
+.PHONY: dup
+dup:
+	docker-compose up -d --build --remove-orphans --force-recreate
+
+.PHONY: down
+down:
+	docker-compose down --volumes

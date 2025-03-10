@@ -42,6 +42,36 @@ This API contains a simple method `hello-world` that returns the following `resu
 
 4. The API will be available at `http://localhost:5000`.
 
+## Running with Docker
+
+1. To build and start the Docker containers:
+    ```sh
+    make up
+    ```
+
+2. To start the Docker containers in detached mode:
+    ```sh
+    make dup
+    ```
+
+3. To stop and remove the Docker containers:
+    ```sh
+    make down
+    ```
+
+## Running Tests
+
+1. To run unit tests:
+    ```sh
+    make test
+    ```
+
+2. To run functional (Cucumber) tests:
+    ```sh
+    make functional-test
+    ```
+    N.B. Make sure the app is already up before running the functional tests
+
 ## Example Request
 
 To call the `hello-world` method, send a POST request to the API with the following JSON payload:

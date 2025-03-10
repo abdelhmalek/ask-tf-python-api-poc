@@ -3,3 +3,5 @@ Werkzeug==2.0.1
 json-rpc==1.13.0
 marshmallow==3.14.1
 python-dotenv==1.0.1
+behave==1.2.6
+requests==2.26.0
