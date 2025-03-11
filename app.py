@@ -1,46 +1,29 @@
-from flask import Flask, request, jsonify
-from jsonrpc import JSONRPCResponseManager, dispatcher
-from config import get_config
-from marshmallow import ValidationError
-from schemas.message_schema import MessageSchema
-from jsonrpc.exceptions import JSONRPCDispatchException
-from errors.errors import InvalidParamsError
+from fastapi import FastAPI, Request, Response
+from pydantic import BaseModel, ValidationError, StrictStr, Field
+from jsonrpcserver import method, async_dispatch, Result, Success, InvalidParams
 from dotenv import load_dotenv
-import os
+import uvicorn
 
 load_dotenv()  # Load environment variables from .env file
 
-app = Flask(__name__)
-app.config.from_object(get_config())
+app = FastAPI()
 
-message_schema = MessageSchema()
+class MessageSchema(BaseModel):
+    message: StrictStr = Field(min_length=2)
 
-@dispatcher.add_method
-def hello_world(**kwargs):
+@method
+async def hello_world(**message) -> Result:
     try:
-        data = message_schema.load(kwargs)
-        return {"message": data["message"]}
+        validated_message = MessageSchema(**message)
+        return Success(validated_message.dict())
     except ValidationError as e:
-        raise InvalidParamsError(messages=e.messages)
+        return InvalidParams(e.errors())
 
-@app.errorhandler(Exception)
-def handle_exception(error):
-    response = {
-        "jsonrpc": "2.0",
-        "error": {
-            "code": -32603,
-            "message": "Internal error",
-            "data": str(error)
-        },
-        "id": 1
-    }
-    return jsonify(response), 500
-
-@app.route('/json-rpc', methods=['POST'])
-def api():
-    response = JSONRPCResponseManager.handle(
-        request.get_data(as_text=True), dispatcher)
-    return jsonify(response.data)
+@app.post("/json-rpc")
+async def api(request: Request) -> Response:
+    request_data = await request.body()
+    response = await async_dispatch(request_data)
+    return Response(content=response, media_type="application/json")
 
 if __name__ == '__main__':
-    app.run()
+    uvicorn.run(app, host="0.0.0.0", port=5000)

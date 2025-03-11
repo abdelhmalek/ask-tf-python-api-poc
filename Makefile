@@ -18,12 +18,12 @@ install:
 .PHONY: run
 run:
 	@echo "Running the API server..."
-	$(call venv, python app.py)
+	$(call venv, uvicorn app:app --host 0.0.0.0 --port 5000)
 
 .PHONY: run-dev
 run-dev:
 	@echo "Running the API server in development mode with hot reload..."
-	FLASK_ENV=development $(call venv, python app.py)
+	$(call venv, uvicorn app:app --host 0.0.0.0 --port 5000 --reload)
 
 .PHONY: test
 test:

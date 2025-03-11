@@ -1,7 +1,7 @@
-Flask==2.0.1
-Werkzeug==2.0.1
-json-rpc==1.13.0
-marshmallow==3.14.1
+fastapi==0.95.2
+uvicorn==0.22.0
+jsonrpcserver==5.0.7
+pydantic==1.10.7
 python-dotenv==1.0.1
 behave==1.2.6
-requests==2.26.0
+requests==2.31.0
