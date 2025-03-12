@@ -1,46 +1,18 @@
-from flask import Flask, request, jsonify
-from jsonrpc import JSONRPCResponseManager, dispatcher
-from config import get_config
-from marshmallow import ValidationError
-from schemas.message_schema import MessageSchema
-from jsonrpc.exceptions import JSONRPCDispatchException
-from errors.errors import InvalidParamsError
-from dotenv import load_dotenv
-import os
+import fastapi_jsonrpc as jsonrpc
+from fastapi import Body
 
-load_dotenv()  # Load environment variables from .env file
+app = jsonrpc.API()
 
-app = Flask(__name__)
-app.config.from_object(get_config())
+jsonrpc_entrypoint = jsonrpc.Entrypoint('/json-rpc')
 
-message_schema = MessageSchema()
+@jsonrpc_entrypoint.method()
+async def hello_world(message: str = Body(..., examples=['hello'])) -> str:
+    return message
 
-@dispatcher.add_method
-def hello_world(**kwargs):
-    try:
-        data = message_schema.load(kwargs)
-        return {"message": data["message"]}
-    except ValidationError as e:
-        raise InvalidParamsError(messages=e.messages)
 
-@app.errorhandler(Exception)
-def handle_exception(error):
-    response = {
-        "jsonrpc": "2.0",
-        "error": {
-            "code": -32603,
-            "message": "Internal error",
-            "data": str(error)
-        },
-        "id": 1
-    }
-    return jsonify(response), 500
+app.bind_entrypoint(jsonrpc_entrypoint)
 
-@app.route('/json-rpc', methods=['POST'])
-def api():
-    response = JSONRPCResponseManager.handle(
-        request.get_data(as_text=True), dispatcher)
-    return jsonify(response.data)
 
 if __name__ == '__main__':
-    app.run()
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5001)
