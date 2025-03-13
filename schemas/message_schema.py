@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields
+from pydantic import BaseModel
 
-class MessageSchema(Schema):
-    message = fields.String(required=True)
+
+class Message(BaseModel):
+    message: str
