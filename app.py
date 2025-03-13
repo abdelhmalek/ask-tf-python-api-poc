@@ -1,46 +1,43 @@
-from flask import Flask, request, jsonify
-from jsonrpc import JSONRPCResponseManager, dispatcher
-from config import get_config
-from marshmallow import ValidationError
-from schemas.message_schema import MessageSchema
-from jsonrpc.exceptions import JSONRPCDispatchException
-from errors.errors import InvalidParamsError
+from starlette.applications import Starlette
+from starlette.responses import JSONResponse
+from starlette.routing import Route
+from pydantic import ValidationError
 from dotenv import load_dotenv
-import os
+import uvicorn
+import json
 
-load_dotenv()  # Load environment variables from .env file
+from jsonrpc_starlette import JSONRPCStarlette
+from schemas.message_schema import Message
 
-app = Flask(__name__)
-app.config.from_object(get_config())
+load_dotenv()
 
-message_schema = MessageSchema()
+jsonrpc = JSONRPCStarlette()
 
-@dispatcher.add_method
-def hello_world(**kwargs):
+async def hello_world(**params):
     try:
-        data = message_schema.load(kwargs)
-        return {"message": data["message"]}
+        data = Message(**params)
+        return {"message": data.message}
     except ValidationError as e:
-        raise InvalidParamsError(messages=e.messages)
+        return {
+            "error": {
+                "code": -32602,
+                "message": "Validation error",
+                "data": e.errors()
+            }
+        }
 
-@app.errorhandler(Exception)
-def handle_exception(error):
-    response = {
-        "jsonrpc": "2.0",
-        "error": {
-            "code": -32603,
-            "message": "Internal error",
-            "data": str(error)
-        },
-        "id": 1
-    }
-    return jsonify(response), 500
+jsonrpc.add_function(hello_world)
 
-@app.route('/json-rpc', methods=['POST'])
-def api():
-    response = JSONRPCResponseManager.handle(
-        request.get_data(as_text=True), dispatcher)
-    return jsonify(response.data)
+async def json_rpc_handler(request):
+    data = await request.body()
+    result = await jsonrpc.handle(data)
+    return JSONResponse(json.loads(result))
+
+routes = [
+    Route('/json-rpc', json_rpc_handler, methods=['POST'])
+]
+
+app = Starlette(debug=True, routes=routes)
 
 if __name__ == '__main__':
-    app.run()
+    uvicorn.run(app, host='0.0.0.0', port=8888)
